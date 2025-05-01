@@ -12,19 +12,31 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('events', function (Blueprint $table) {
-            $table->id();
-            $table->bigInteger('organizer_id')->unsigned(); 
+            $table->id(); // équivalent à bigIncrements
+            $table->unsignedBigInteger('organizer_id');
             $table->string('title', 150)->nullable();
             $table->text('description')->nullable();
             $table->string('location', 150)->nullable();
-            $table->dateTime('event_date')->nullable();
+            $table->date('event_date')->nullable();
+            $table->time('start_time')->nullable();
+            $table->time('end_time')->nullable();
             $table->text('banner_url')->nullable();
-            $table->boolean('is_active')->default(true);
-            $table->timestamp('created_at')->useCurrent();
-
-             // Contraintes de clé étrangère
-             $table->foreign('organizer_id')->references('id')->on('users')->onDelete('cascade');
+            $table->boolean('is_active')->default(1);
+            $table->string('organizer_name', 80)->nullable();
+            $table->unsignedInteger('capacity')->nullable(); // Non signé
+            $table->enum('category', [
+                'concert', 'théâtre', 'cinéma', 'conférence', 'formation', 'exposition',
+                'festival', 'atelier', 'compétition', 'networking', 'webinaire', 'religieux',
+                'sportif', 'culturel', 'jeux-video', 'autre'
+            ])->nullable();
+        
+            $table->timestamps(); // gère automatiquement created_at et updated_at
+        
+            // Clé étrangère
+            $table->foreign('organizer_id')->references('id')->on('users')->onDelete('cascade');
         });
+        
+          
     }        
 
     /**

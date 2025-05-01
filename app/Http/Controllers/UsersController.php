@@ -2,73 +2,83 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
+
 
 class UsersController extends Controller
 {
     
-    public function test()
-    {
-        return response()->json([
-        'success' => true,
-        'message' => 'Ceci est un test'
-        ], 200);
-    
-    }
-    
     /**
      * Display a listing of the resource.
      */
-    public function index()
+
+    
+    /**
+     * Affiche les informations du profil utilisateur.
+     */
+    public function profile(Request $request)
     {
-        //
+        $user = Auth::user();
+
+        return response()->json([
+            'success' => true,
+            'profile' => [
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => $user->phone ?? null,
+            ]
+        ]);
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Met à jour les informations de l'utilisateur connecté.
      */
-    public function create()
+    public function update(Request $request)
     {
-        //
+        /** @var \App\Models\User $user */
+
+        $user = Auth::user();
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'nullable|string|max:255',
+            'email' => 'nullable|email|unique:users,email,' . $user->id,
+            'phone' => 'nullable|string|max:20',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur de validation',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $user->update($request->only(['name', 'email', 'phone']));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Profil mis à jour avec succès.',
+            'data' => $user
+        ]);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Supprime le compte utilisateur.
      */
-    public function store(Request $request)
+    public function delete(Request $request)
     {
-        //
-    }
+        /** @var \App\Models\User $user */
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
+        $user = Auth::user();
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
+        $user->delete();
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return response()->json([
+            'success' => true,
+            'message' => 'Compte utilisateur supprimé avec succès.'
+        ]);
     }
 }

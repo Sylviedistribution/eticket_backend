@@ -13,20 +13,16 @@ return new class extends Migration
     {
         Schema::create('tickets', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('event_id')->unsigned();
-            $table->bigInteger('user_id')->unsigned();
+            $table->foreignId('event_id')->constrained('events')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('ticket_category_id')->constrained('ticket_categories')->onDelete('cascade');
+        
             $table->text('qr_code')->nullable();
             $table->string('ticket_color', 20)->nullable();
             $table->string('ticket_shape', 20)->nullable();
             $table->timestamp('purchased_at')->useCurrent();
-
-             // Contraintes de clé étrangère
-        $table->foreign('event_id')->references('id')->on('events')->onDelete('cascade');
-        $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-        });
-
-       
-        
+        }
+        );
     }
 
     /**
