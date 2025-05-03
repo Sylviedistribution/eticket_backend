@@ -14,4 +14,6 @@ class Ticket extends Model
         'qr_code',
         'commandeId',
     ];
+
+    
 }

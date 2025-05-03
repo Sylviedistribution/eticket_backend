@@ -23,6 +23,7 @@ use App\Http\Controllers\NotificationsController;
 Route::controller(AuthController::class)->group(function () {
     Route::post('/register', 'register');              // Inscription
     Route::post('/login', 'login');                    // Connexion
+    Route::post('/logout', 'logout');   // Lohout
     Route::post('/forgot-password', 'sendResetLinkEmail'); // Demande de réinitialisation
     Route::post('/reset-password', 'resetPassword');   // Réinitialisation
 });
@@ -35,7 +36,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // 👤 Gestion du profil utilisateur
     Route::prefix('user')->controller(UsersController::class)->group(function () {
-        Route::put('/profile', 'profile');     // Voir/éditer profil
+        Route::get('/profile', 'profile');     // Voir/éditer profil
         Route::put('/update', 'update');       // Mise à jour des données
         Route::delete('/delete', 'delete');    // Suppression du compte
     });
@@ -57,11 +58,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/{id}', 'eventDelete');    // Supprimer un événement
     });
 
-   
-
 // ✅ Vérification d'email (optionnelle si email vérifié requis)
 Route::middleware(['auth:sanctum', 'verified'])->get('/user', fn(Request $request) => $request->user());
-
 
 // 💳 Transactions (gérées publiquement ou pour des tests)
 Route::prefix('transactions')->controller(TransactionsController::class)->group(function () {
@@ -85,6 +83,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     // 👥 Utilisateurs
     Route::prefix('users')->controller(UsersController::class)->group(function () {
         Route::get('/', 'index');              // Tous les utilisateurs
+        Route::post('/contact', 'contact');              // Tous les utilisateurs        
         Route::get('/filter', 'filter');       // Filtrage par critères
         Route::delete('/{id}', 'delete');      // Suppression
     });

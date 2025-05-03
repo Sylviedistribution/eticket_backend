@@ -26,7 +26,7 @@ class User extends Authenticatable implements MustVerifyEmail
      * @var list<string>
      */
 
-    public const ROLES = ['organizer', 'user'];
+    public const ROLES = ['admin','organizer', 'user'];
 
     protected $fillable = [
         'name',

@@ -2,19 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\ContactMessageNotification;
 
 
 class UsersController extends Controller
 {
-    
-    /**
-     * Display a listing of the resource.
-     */
-
     
     /**
      * Affiche les informations du profil utilisateur.
@@ -33,7 +29,22 @@ class UsersController extends Controller
         ]);
     }
 
-    /**
+    
+    public function contact(Request $request)
+    {
+        $data = $request->validate([
+            'name' => 'required|string',
+            'email' => 'required|email',
+            'message' => 'required|string',
+        ]);
+
+        Notification::route('mail', 'isylvestre757@gmail.com')
+                ->notify(new ContactMessageNotification($data['name'], $data['email'], $data['message']));
+
+        return response()->json(['message' => 'Email envoyé avec succès'], 200);
+    }
+    
+        /**
      * Met à jour les informations de l'utilisateur connecté.
      */
     public function update(Request $request)

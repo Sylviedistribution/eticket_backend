@@ -27,7 +27,7 @@ class Event extends Model
     // Relation : Un événement appartient à un organisateur
     public function organizer()
     {
-        return $this->belongsTo(User::class, 'organizer_id');
+        return $this->belongsTo(User::class, 'id');
     }
 
     // Relation : Un événement peut avoir plusieurs catégories de tickets

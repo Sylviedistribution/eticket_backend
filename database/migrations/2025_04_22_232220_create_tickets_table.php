@@ -18,8 +18,6 @@ return new class extends Migration
             $table->foreignId('ticket_category_id')->constrained('ticket_categories')->onDelete('cascade');
         
             $table->text('qr_code')->nullable();
-            $table->string('ticket_color', 20)->nullable();
-            $table->string('ticket_shape', 20)->nullable();
             $table->timestamp('purchased_at')->useCurrent();
         }
         );

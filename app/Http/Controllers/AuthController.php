@@ -106,4 +106,14 @@ namespace App\Http\Controllers;
     
             return response()->json(['error' => 'Failed to reset password.'], 500);
         }
+
+        public function logout(Request $request)
+        {
+            Auth::guard('api')->logout();
+
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return response()->json(['message' => 'Déconnecté']);
+        }
 }
