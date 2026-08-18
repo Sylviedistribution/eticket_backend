@@ -1,6 +1,6 @@
 FROM php:8.2-fpm
 
-# Installer les dépendances système
+# Dépendances système
 RUN apt-get update && apt-get install -y \
     nginx \
     git \
@@ -27,24 +27,28 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Installer Composer
+# Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Dossier de travail
 WORKDIR /var/www
 
-# Copier les fichiers Composer
+# Copier Composer en premier pour profiter du cache Docker
 COPY composer.json composer.lock ./
 
-# Installer les dépendances PHP
+# Installer les dépendances sans exécuter les scripts Laravel
 RUN composer install \
     --no-dev \
     --no-interaction \
     --prefer-dist \
-    --optimize-autoloader
+    --no-scripts
 
-# Copier le projet Laravel
+# Copier tout le projet Laravel
 COPY . .
+
+# Générer l'autoload maintenant que artisan existe
+RUN composer dump-autoload \
+    --no-dev \
+    --optimize
 
 # Permissions Laravel
 RUN chown -R www-data:www-data \
@@ -59,8 +63,6 @@ COPY docker/start.sh /usr/local/bin/start.sh
 
 RUN chmod +x /usr/local/bin/start.sh
 
-# Port utilisé par Render
 EXPOSE 10000
 
-# Démarrage
 CMD ["/usr/local/bin/start.sh"]
