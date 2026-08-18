@@ -8,7 +8,6 @@ namespace App\Http\Controllers;
     use Illuminate\Support\Facades\Auth;
     use Illuminate\Auth\Events\Registered;
 
-
     class AuthController extends Controller
     {
         // Inscription
@@ -19,6 +18,7 @@ namespace App\Http\Controllers;
                 'name' => 'required|string|max:100',
                 'email' => 'required|string|email|max:100|unique:users',
                 'password' => 'required|string|confirmed|min:8',
+                'password_confirmation' => 'required|string|min:8',
                 'phone' => 'nullable|string|max:20', // Optionnel
                 'avatar_url' => 'nullable|string|max:255', // Optionnel
                 'role' => 'required|in:' . implode(',', User::ROLES),
@@ -39,39 +39,47 @@ namespace App\Http\Controllers;
                 'created_at' => now(), // Horodatage de la création
             ]);
 
+            // Générer un token pour le client
+            $token = $user->createToken('ClientToken')->plainTextToken;
 
             event(new Registered($user));
 
             return response()->json([
-                'message' => 'Compte créé avec succès. Vérifiez votre adresse email pour activer votre compte.'
-            ]);
-        }
+            'message' => 'Compte créé avec succès. Vérifiez votre adresse email pour activer votre compte.',
+            'token' => $token
+            ], 201);
+         }
 
       // Connexion
         public function login(Request $request)
         {
+            // 1. Validation des champs requis
             $request->validate([
                 'email' => 'required|string|email',
                 'password' => 'required|string',
             ]);
-
-            if (!Auth::attempt($request->only('email', 'password'))) {
+    
+            // 2. Vérifie que l'utilisateur existe et que le mot de passe est correct
+            $user = User::where('email', $request->email)->first();
+    
+            if (!$user || !Hash::check($request->password, $user->password)) {
                 return response()->json([
                     'message' => 'Identifiants incorrects. Veuillez réessayer.',
                 ], 401);
             }
     
-            //$request->session()->regenerate(); //Regenere la session pour eviter du session fixation (faille de sécurité).
-
-            $user = Auth::user();
+            // 3. Génère un token d'accès avec Sanctum
+            $token = $user->createToken('auth_token')->plainTextToken;
     
+            // 4. Retourne le token et les infos utilisateur au front
             return response()->json([
                 'message' => 'Connexion réussie.',
+                'token' => $token,
+                'token_type' => 'Bearer',
                 'user' => $user,
-
             ]);
         }
-    
+                    
         // Envoi du lien pour la récupération de mot de passe
         public function sendResetLinkEmail(Request $request)
         {
@@ -109,11 +117,9 @@ namespace App\Http\Controllers;
 
         public function logout(Request $request)
         {
-            Auth::guard('api')->logout();
+             // Supprime le token d'authentification en cours
+            $request->user()->currentAccessToken()->delete();
 
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
-
-            return response()->json(['message' => 'Déconnecté']);
+            return response()->json(['message' => 'Déconnecté avec succès.']);
         }
 }

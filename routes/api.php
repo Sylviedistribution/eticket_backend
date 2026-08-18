@@ -23,7 +23,7 @@ use App\Http\Controllers\NotificationsController;
 Route::controller(AuthController::class)->group(function () {
     Route::post('/register', 'register');              // Inscription
     Route::post('/login', 'login');                    // Connexion
-    Route::post('/logout', 'logout');   // Lohout
+    Route::post('/logout', 'logout')->middleware('auth:sanctum');
     Route::post('/forgot-password', 'sendResetLinkEmail'); // Demande de réinitialisation
     Route::post('/reset-password', 'resetPassword');   // Réinitialisation
 });
